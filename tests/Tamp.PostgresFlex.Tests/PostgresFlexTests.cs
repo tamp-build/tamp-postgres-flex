@@ -138,9 +138,10 @@ public sealed class PostgresFlexTests
     }
 
     [Fact]
-    public void Executable_Is_Tool_Path()
+    public void Executable_Matches_Tool_Path()
     {
+        // AbsolutePath normalization differs by OS — assert basename only.
         var plan = PostgresFlex.Show(FakeTool(), s => s.SetResourceGroup("rg").SetName("pg"));
-        Assert.Equal("/fake/az", plan.Executable);
+        Assert.EndsWith("az", plan.Executable.TrimEnd(System.IO.Path.DirectorySeparatorChar));
     }
 }
