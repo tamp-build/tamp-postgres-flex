@@ -60,6 +60,23 @@ public static class PostgresFlex
     public static CommandPlan UpdateAdminPassword(Tool tool, Action<UpdateAdminPasswordSettings> configure)
         => Build<UpdateAdminPasswordSettings>(tool, configure);
 
+    // ---- Object-init overloads (TAM-161) ----
+    // Parallel surface to the fluent verbs above. Both styles produce identical
+    // CommandPlans; fluent stays canonical in docs and `tamp init` templates.
+    //
+    // Lifecycle verbs (Start / Stop / Restart) intentionally stay fluent-only:
+    // their shared LifecycleSettings carries an internal verb selector — users
+    // can't construct it object-init style without choosing a verb, and the
+    // current fluent shape already pins the verb at the call site.
+    public static CommandPlan Show(Tool tool, ShowSettings settings) => Plan(tool, settings);
+    public static CommandPlan List(Tool tool, ListSettings settings) => Plan(tool, settings);
+    public static CommandPlan FirewallRuleCreate(Tool tool, FirewallRuleCreateSettings settings) => Plan(tool, settings);
+    public static CommandPlan FirewallRuleDelete(Tool tool, FirewallRuleDeleteSettings settings) => Plan(tool, settings);
+    public static CommandPlan FirewallRuleList(Tool tool, FirewallRuleListSettings settings) => Plan(tool, settings);
+    public static CommandPlan ParameterSet(Tool tool, ParameterSetSettings settings) => Plan(tool, settings);
+    public static CommandPlan ParameterShow(Tool tool, ParameterShowSettings settings) => Plan(tool, settings);
+    public static CommandPlan UpdateAdminPassword(Tool tool, UpdateAdminPasswordSettings settings) => Plan(tool, settings);
+
     private static CommandPlan Build<T>(Tool tool, Action<T>? configure) where T : PostgresFlexSettingsBase, new()
     {
         if (tool is null) throw new ArgumentNullException(nameof(tool));
@@ -75,5 +92,12 @@ public static class PostgresFlex
         var s = new LifecycleSettings(verb);
         configure(s);
         return s.ToCommandPlan(tool);
+    }
+
+    private static CommandPlan Plan<T>(Tool tool, T settings) where T : PostgresFlexSettingsBase
+    {
+        if (tool is null) throw new ArgumentNullException(nameof(tool));
+        if (settings is null) throw new ArgumentNullException(nameof(settings));
+        return settings.ToCommandPlan(tool);
     }
 }
